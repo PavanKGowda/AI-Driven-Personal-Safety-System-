@@ -7,6 +7,7 @@ import seaborn as sns
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import precision_recall_curve, average_precision_score
 import sys
 import io
 from sklearn.metrics import roc_curve, auc
@@ -132,3 +133,19 @@ if model.kernel == "linear":
     plt.show()
 else:
     print("Feature importance heatmap only supported for linear SVM kernel.")
+
+# === 5. Precision vs Recall Curve for Each Class === #
+y_score_prob = model.predict_proba(X_test)[:, 1]  # Probabilities for the "Scream" class
+
+precision, recall, _ = precision_recall_curve(y_test, y_score_prob)
+avg_precision = average_precision_score(y_test, y_score_prob)
+
+plt.figure(figsize=(6, 4))
+plt.plot(recall, precision, color="purple", lw=2, label=f"Precision-Recall curve (AP = {avg_precision:.2f})")
+plt.xlabel("Recall")
+plt.ylabel("Precision")
+plt.title("Precision vs Recall Curve (Scream Class)")
+plt.legend(loc="upper right")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
