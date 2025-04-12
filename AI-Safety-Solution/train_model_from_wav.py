@@ -2,11 +2,14 @@ import os
 import numpy as np
 import librosa
 import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import sys
 import io
+from sklearn.metrics import roc_curve, auc
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Parameters
@@ -65,9 +68,67 @@ model = SVC(kernel="linear", probability=True)
 model.fit(X_train, y_train)
 
 # Evaluate
+y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, model.predict(X_test))
 print(f"\n🎯 Model Accuracy: {accuracy:.2f}")
 
 # Save model
 joblib.dump(model, MODEL_SAVE_PATH)
 print(f"\n💾 Model saved at: {MODEL_SAVE_PATH}")
+
+# === 🔍 VISUALIZATION === #
+
+# 1. Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Scream", "Scream"])
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
+plt.grid(False)
+plt.tight_layout()
+plt.show()
+
+# 2. Class Distribution (Bar Plot)
+class_counts = [y.count(0) if isinstance(y, list) else np.sum(y == 0),
+                y.count(1) if isinstance(y, list) else np.sum(y == 1)]
+
+plt.figure(figsize=(6, 4))
+sns.barplot(x=["Non-Scream", "Scream"], y=class_counts, palette="Set2")
+plt.title("Class Distribution in Dataset")
+plt.ylabel("Number of Samples")
+plt.xlabel("Class")
+plt.tight_layout()
+plt.show()
+
+# === 3. ROC Curve === #
+y_score = model.decision_function(X_test)
+
+fpr, tpr, thresholds = roc_curve(y_test, y_score)
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(6, 4))
+plt.plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC curve (AUC = {roc_auc:.2f})")
+plt.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--")
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("Receiver Operating Characteristic (ROC)")
+plt.legend(loc="lower right")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# === 4. MFCC Feature Importance Heatmap === #
+# Only applicable for linear SVM
+if model.kernel == "linear":
+    coef = model.coef_[0]  # SVM linear kernel has a coefficient per feature
+    feature_names = [f"MFCC {i+1}" for i in range(len(coef))]
+
+    plt.figure(figsize=(8, 4))
+    sns.heatmap(np.array([coef]), cmap="coolwarm", annot=True, xticklabels=feature_names, yticklabels=["Importance"], cbar=True)
+    plt.title("Feature Importance from SVM Coefficients (MFCCs)")
+    plt.tight_layout()
+    plt.show()
+else:
+    print("Feature importance heatmap only supported for linear SVM kernel.")
