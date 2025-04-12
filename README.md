@@ -48,7 +48,7 @@ The **AI SAFETY SOLUTION** is an innovative solution that leverages the power of
 
 📁 **PROJECT STRUCTURE**
 
-**|── ai_safety_system**
+**|── ai_safety_system**: 
         **└── ai_safety_system/keyword_detection.py**       
         **└── ai_safety_system/scream_detection.py**   
 **├── data/**
