@@ -8,6 +8,7 @@ from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import precision_recall_curve, average_precision_score
+from sklearn.preprocessing import label_binarize
 import sys
 import io
 from sklearn.metrics import roc_curve, auc
@@ -83,6 +84,12 @@ print(f"\n💾 Model saved at: {MODEL_SAVE_PATH}")
 cm = confusion_matrix(y_test, y_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Scream", "Scream"])
 disp.plot(cmap=plt.cm.Blues)
+cm_path = os.path.join(FEATURE_SAVE_PATH, "confusion_matrix.png")
+plt.title("Confusion Matrix")
+plt.grid(False)
+plt.tight_layout()
+plt.savefig(cm_path)
+print(f"🖼️ Confusion matrix saved at: {cm_path}")
 plt.title("Confusion Matrix")
 plt.grid(False)
 plt.tight_layout()
@@ -98,6 +105,10 @@ plt.title("Class Distribution in Dataset")
 plt.ylabel("Number of Samples")
 plt.xlabel("Class")
 plt.tight_layout()
+
+class_dist_path = os.path.join(FEATURE_SAVE_PATH, "class_distribution.png")
+plt.savefig(class_dist_path)
+print(f"🖼️ Class distribution saved at: {class_dist_path}")
 plt.show()
 
 # === 3. ROC Curve === #
@@ -117,19 +128,25 @@ plt.title("Receiver Operating Characteristic (ROC)")
 plt.legend(loc="lower right")
 plt.grid(True)
 plt.tight_layout()
+
+roc_path = os.path.join(FEATURE_SAVE_PATH, "roc_curve.png")
+plt.savefig(roc_path)
+print(f"🖼️ ROC curve saved at: {roc_path}")
 plt.show()
 
 
 # === 4. MFCC Feature Importance Heatmap === #
 # Only applicable for linear SVM
 if model.kernel == "linear":
-    coef = model.coef_[0]  # SVM linear kernel has a coefficient per feature
-    feature_names = [f"MFCC {i+1}" for i in range(len(coef))]
-
     plt.figure(figsize=(8, 4))
-    sns.heatmap(np.array([coef]), cmap="coolwarm", annot=True, xticklabels=feature_names, yticklabels=["Importance"], cbar=True)
+    sns.heatmap(np.array([coef]), cmap="coolwarm", annot=True, xticklabels=feature_names,
+            yticklabels=["Importance"], cbar=True)
     plt.title("Feature Importance from SVM Coefficients (MFCCs)")
     plt.tight_layout()
+
+    importance_path = os.path.join(FEATURE_SAVE_PATH, "mfcc_feature_importance.png")
+    plt.savefig(importance_path)
+    print(f"🖼️ Feature importance heatmap saved at: {importance_path}")
     plt.show()
 else:
     print("Feature importance heatmap only supported for linear SVM kernel.")
@@ -148,4 +165,38 @@ plt.title("Precision vs Recall Curve (Scream Class)")
 plt.legend(loc="upper right")
 plt.grid(True)
 plt.tight_layout()
+plt.show()
+
+# Binarize the output
+y_test_binarized = label_binarize(y_test, classes=[0, 1])  # shape: (n_samples, n_classes)
+n_classes = y_test_binarized.shape[1]
+
+# Get probability scores for both classes
+y_score_prob_all = model.predict_proba(X_test)
+
+# Precision-Recall per class
+plt.figure(figsize=(7, 5))
+
+colors = ["blue", "orange"]
+class_labels = ["Non-Scream", "Scream"]
+
+for i in range(n_classes):
+    precision, recall, _ = precision_recall_curve(y_test_binarized[:, i], y_score_prob_all[:, i])
+    avg_precision = average_precision_score(y_test_binarized[:, i], y_score_prob_all[:, i])
+    
+    plt.plot(recall, precision, color=colors[i], lw=2,
+             label=f"{class_labels[i]} (AP = {avg_precision:.2f})")
+
+plt.xlabel("Recall")
+plt.ylabel("Precision")
+plt.title("Precision-Recall Curves (Non-Scream Class)")
+plt.legend(loc="lower left")
+plt.grid(True)
+plt.tight_layout()
+
+# === 🖼️ Save the figure === #
+output_image_path = os.path.join(FEATURE_SAVE_PATH, "precision_recall_per_class.png")
+plt.savefig(output_image_path)
+print(f"\n🖼️ Precision-Recall curve image saved at: {output_image_path}")
+
 plt.show()
