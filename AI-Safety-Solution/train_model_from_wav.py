@@ -84,12 +84,6 @@ print(f"\n💾 Model saved at: {MODEL_SAVE_PATH}")
 cm = confusion_matrix(y_test, y_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Scream", "Scream"])
 disp.plot(cmap=plt.cm.Blues)
-cm_path = os.path.join(FEATURE_SAVE_PATH, "confusion_matrix.png")
-plt.title("Confusion Matrix")
-plt.grid(False)
-plt.tight_layout()
-plt.savefig(cm_path)
-print(f"🖼️ Confusion matrix saved at: {cm_path}")
 plt.title("Confusion Matrix")
 plt.grid(False)
 plt.tight_layout()
@@ -105,10 +99,6 @@ plt.title("Class Distribution in Dataset")
 plt.ylabel("Number of Samples")
 plt.xlabel("Class")
 plt.tight_layout()
-
-class_dist_path = os.path.join(FEATURE_SAVE_PATH, "class_distribution.png")
-plt.savefig(class_dist_path)
-print(f"🖼️ Class distribution saved at: {class_dist_path}")
 plt.show()
 
 # === 3. ROC Curve === #
@@ -128,25 +118,19 @@ plt.title("Receiver Operating Characteristic (ROC)")
 plt.legend(loc="lower right")
 plt.grid(True)
 plt.tight_layout()
-
-roc_path = os.path.join(FEATURE_SAVE_PATH, "roc_curve.png")
-plt.savefig(roc_path)
-print(f"🖼️ ROC curve saved at: {roc_path}")
 plt.show()
 
 
 # === 4. MFCC Feature Importance Heatmap === #
 # Only applicable for linear SVM
 if model.kernel == "linear":
+    coef = model.coef_[0]  # SVM linear kernel has a coefficient per feature
+    feature_names = [f"MFCC {i+1}" for i in range(len(coef))]
+
     plt.figure(figsize=(8, 4))
-    sns.heatmap(np.array([coef]), cmap="coolwarm", annot=True, xticklabels=feature_names,
-            yticklabels=["Importance"], cbar=True)
+    sns.heatmap(np.array([coef]), cmap="coolwarm", annot=True, xticklabels=feature_names, yticklabels=["Importance"], cbar=True)
     plt.title("Feature Importance from SVM Coefficients (MFCCs)")
     plt.tight_layout()
-
-    importance_path = os.path.join(FEATURE_SAVE_PATH, "mfcc_feature_importance.png")
-    plt.savefig(importance_path)
-    print(f"🖼️ Feature importance heatmap saved at: {importance_path}")
     plt.show()
 else:
     print("Feature importance heatmap only supported for linear SVM kernel.")
