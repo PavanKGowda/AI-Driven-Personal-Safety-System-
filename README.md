@@ -48,21 +48,18 @@ The **AI SAFETY SOLUTION** is an innovative solution that leverages the power of
 
 📁 **PROJECT STRUCTURE**
 
-**|── ai_safety_system**
-
-   **└── ai_safety_system/keyword_detection.py**       
-   **└── ai_safety_system/scream_detection.py**
-   
-**├── data/**                          
-**├── scream/**                        
-**├── non_scream/**                    
+**|── ai_safety_system**: 
+        **└── ai_safety_system/keyword_detection.py**       
+        **└── ai_safety_system/scream_detection.py**   
+**├── data/**
+**├── datatsets**
+        **├── scream/**                        
+        **├── non_scream/**                    
 **├── saved_audio/YYYY-MM-DD/**       
 **├── train_model_from_wav.py**       
 **├── run_alerter.py**               
 **├── Run_alert.ipynb**               
-**├── requirements.txt**             
-**├── README.md**                     
-**└── LICENSE**
+**├── requirements.txt** 
 
 .
 .
