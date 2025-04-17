@@ -74,8 +74,6 @@ def start_alerter():
                     os.rename(temp_audio_path, filename)
                     print(f"💾 Alert clip saved: {filename}")
                     # 🚀 Send Alerts
-                    send_email_alert(filename)
-                    send_sms_alert()
 
                     time.sleep(3)
                 else:
