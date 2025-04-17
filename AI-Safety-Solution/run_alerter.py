@@ -4,7 +4,7 @@ import os
 import time
 from datetime import datetime
 from ai_safety_system.keyword_detection import EMERGENCY_KEYWORDS
-from ai_safety_system.scream_detection import predict
+
 import sys
 import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -73,7 +73,10 @@ def start_alerter():
                     filename = os.path.join(date_folder, f"{time_str}.wav")
                     os.rename(temp_audio_path, filename)
                     print(f"💾 Alert clip saved: {filename}")
-                    print("📲 Sending alert...\n")
+                    # 🚀 Send Alerts
+                    send_email_alert(filename)
+                    send_sms_alert()
+
                     time.sleep(3)
                 else:
                     os.remove(temp_audio_path)  # Clean up if no alert
