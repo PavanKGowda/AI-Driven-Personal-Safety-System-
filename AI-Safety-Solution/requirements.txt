@@ -5,3 +5,6 @@ scikit-learn
 soundfile
 vosk
 joblib
+twilio
+geocoder
+python-dotenv

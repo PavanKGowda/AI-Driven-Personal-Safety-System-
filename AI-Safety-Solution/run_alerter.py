@@ -4,6 +4,9 @@ import os
 import time
 from datetime import datetime
 from ai_safety_system.keyword_detection import EMERGENCY_KEYWORDS
+from ai_safety_system.scream_detection import predict
+from ai_safety_system.alert_sender import send_alert_message, send_whatsapp_alert, get_location_url
+
 
 import sys
 import io
@@ -59,21 +62,32 @@ def start_alerter():
                 # Step 4: Save only if alert
                 if keyword_detected or scream_detected:
                     print("\n🚨 EMERGENCY TRIGGERED!")
+                    reasons = []
                     if keyword_detected:
                         print("🔑 Reason: Keyword")
+                        reasons.append("keyword detected")
                     if scream_detected:
                         print("📢 Reason: Scream")
+                        reasons.append("scream detected")
 
-                    # Create folder based on date
                     date_str, time_str = get_datetime()
                     date_folder = os.path.join(BASE_FOLDER, date_str)
                     os.makedirs(date_folder, exist_ok=True)
 
-                    # Save alert clip
                     filename = os.path.join(date_folder, f"{time_str}.wav")
                     os.rename(temp_audio_path, filename)
                     print(f"💾 Alert clip saved: {filename}")
-                    # 🚀 Send Alerts
+
+                    # 📍 Get location and prepare message
+                    location_url = get_location_url()
+                    alert_msg = (
+                        f"🚨 Emergency detected at {date_str} {time_str} due to {', '.join(reasons)}.\n"
+                        f"📍 Location: {location_url}"
+                    )
+
+                    # 🚀 Send alerts
+                    send_alert_message(alert_msg)
+                    send_whatsapp_alert(alert_msg)
 
                     time.sleep(3)
                 else:
